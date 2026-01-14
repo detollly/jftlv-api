@@ -2,8 +2,12 @@ import re
 import json
 from datetime import datetime
 
-input_file = "jftlvraw.txt"
-output_file = "jftlv.json"
+# -----------------------------
+# CONFIG
+# -----------------------------
+
+INPUT_FILE = "JFTLVraw.txt"
+OUTPUT_FILE = "JFTLV.json"
 
 lv_months = {
     "janvāris": 1, "februāris": 2, "marts": 3, "aprīlis": 4,
@@ -17,114 +21,149 @@ date_regex = re.compile(
     re.IGNORECASE
 )
 
+# -----------------------------
+# LOAD RAW ENTRIES
+# -----------------------------
+
 entries = []
 current_date = None
 current_lines = []
 
-# Read file line by line
-with open(input_file, "r", encoding="utf-8") as f:
+with open(INPUT_FILE, "r", encoding="utf-8") as f:
     for raw_line in f:
         line = raw_line.rstrip("\n")
 
-        # Ignore *completely* empty lines as separators
         if not line.strip():
             continue
 
-        # Detect date line
         m = date_regex.match(line.strip())
         if m:
-            # Save previous entry
             if current_date and current_lines:
                 entries.append((current_date, current_lines))
-
-            # Start new entry
             current_date = line.strip()
             current_lines = []
             continue
 
-        # Accumulate content lines
         if current_date:
             current_lines.append(line)
 
-# Save last entry
 if current_date and current_lines:
     entries.append((current_date, current_lines))
 
-structured = []
+# -----------------------------
+# PARSE ENTRIES
+# -----------------------------
 
+structured = []
 year = datetime.now().year
+
+def is_quote_start(s):
+    return s.startswith("“")
+
+def is_quote_end(s):
+    return (
+        s.endswith("”") or
+        s.endswith("”.") or
+        s.endswith(".”") or
+        s.endswith("” ") or
+        "”" in s  # fallback: contains closing quote anywhere
+    )
 
 for date_lv, lines in entries:
     m = date_regex.match(date_lv)
     if not m:
-        print(f"WARNING: could not parse date line '{date_lv}'")
         continue
 
     day = int(m.group(1))
     month_lv = m.group(2).lower()
     month = lv_months[month_lv]
 
-    # Validate date
-    try:
-        date_iso = datetime(year, month, day).strftime("%Y-%m-%d")
-    except ValueError:
-        print(f"ERROR: Invalid date '{date_lv}' — skipping")
-        continue
+    date_iso = f"{year:04d}-{month:02d}-{day:02d}"
 
-    # We’ll work with indices instead of fixed positions
-    # Clean leading/trailing blank lines just in case
-    lines = [l for l in lines if l.strip()]
+    # Clean lines
+    lines = [l.strip() for l in lines if l.strip()]
 
-    if len(lines) < 3:
-        print(f"WARNING: Entry for {date_lv} looks too short ({len(lines)} content lines)")
-        continue
+    # -----------------------------
+    # TITLE
+    # -----------------------------
+    title = lines[0]
 
-    # Title and quote are still fairly reliable as first two logical lines
-    title = lines[0].strip()
-    quote = lines[1].strip()
+    # -----------------------------
+    # QUOTE (multi-line, robust)
+    # -----------------------------
+    quote_lines = []
+    quote_start = None
+    quote_end = None
 
-    # Find reference: first line containing 'Bāzes teksts'
+    for i, l in enumerate(lines[1:], start=1):
+        if is_quote_start(l) and quote_start is None:
+            quote_start = i
+
+        if quote_start is not None:
+            quote_lines.append(l)
+
+        if quote_start is not None and is_quote_end(l):
+            quote_end = i
+            break
+
+    # Fallback: missing closing quote
+    if quote_start is not None and quote_end is None:
+        quote_end = quote_start
+        quote_lines = [lines[quote_start]]
+
+    quote = " ".join(quote_lines)
+
+    # -----------------------------
+    # REFERENCE (flexible detection)
+    # -----------------------------
+    start_after_quote = (quote_end + 1) if quote_end is not None else 1
     ref_idx = None
-    for i, l in enumerate(lines[2:], start=2):
-        if "Bāzes teksts" in l:
+
+    # Primary match
+    for i in range(start_after_quote, len(lines)):
+        if "Bāzes teksts" in lines[i].replace(" ", ""):
             ref_idx = i
             break
 
+    # Relaxed match
     if ref_idx is None:
-        print(f"WARNING: No reference ('Bāzes teksts') found for {date_lv}")
+        for i in range(start_after_quote, len(lines)):
+            if "Bāzes" in lines[i] and "tekst" in lines[i]:
+                ref_idx = i
+                break
+
+    # Fallback
+    if ref_idx is None:
         reference = ""
-        body_start = 2
+        body_start = start_after_quote
     else:
-        reference = lines[ref_idx].strip()
+        reference = lines[ref_idx]
         body_start = ref_idx + 1
 
-    # Find affirmation start: first line starting with 'Tikai šodien'
+    # -----------------------------
+    # AFFIRMATION
+    # -----------------------------
     aff_idx = None
     for i in range(body_start, len(lines)):
-        if lines[i].lstrip().startswith("Tikai šodien"):
+        if lines[i].startswith("Tikai šodien"):
             aff_idx = i
             break
 
-    # Body: from body_start up to (but not including) aff_idx
     if aff_idx is None:
         body_lines = lines[body_start:]
         affirmation = ""
     else:
         body_lines = lines[body_start:aff_idx]
+        affirmation = " ".join(lines[aff_idx:])
 
-        # Affirmation may span multiple lines; take all lines from aff_idx to the end
-        aff_lines = [lines[aff_idx].strip()]
-        # If you want to merge continuation lines into one paragraph, uncomment:
-        for cont in lines[aff_idx + 1:]:
-            aff_lines.append(cont.strip())
-        affirmation = " ".join(aff_lines)
+    # -----------------------------
+    # BODY
+    # -----------------------------
+    body = " ".join(body_lines)
 
-        # If you prefer to preserve line breaks:
-        aff_lines.extend(l.strip() for l in lines[aff_idx + 1:])
-        affirmation = "\n".join(aff_lines)
-
-    body = "\n".join(l.strip() for l in body_lines)
-
+    # -----------------------------
+    # SAVE ENTRY
+    # -----------------------------
     structured.append({
         "date": date_iso,
         "dateLV": date_lv,
@@ -132,11 +171,14 @@ for date_lv, lines in entries:
         "quote": quote,
         "reference": reference,
         "body": body,
-        "affirmation": affirmation,
+        "affirmation": affirmation
     })
 
-# Save JSON
-with open(output_file, "w", encoding="utf-8") as f:
+# -----------------------------
+# SAVE JSON
+# -----------------------------
+
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(structured, f, ensure_ascii=False, indent=2)
 
-print(f"Saved {len(structured)} structured entries to {output_file}")
+print(f"Saved {len(structured)} entries to {OUTPUT_FILE}")
