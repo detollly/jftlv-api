@@ -1,0 +1,39 @@
+import jftlv from "./jftlv.json";
+
+function getTodayKey() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${month}-${day}`;
+}
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/") {
+      const key = getTodayKey();
+      const entry = jftlv.find(e => e.date === key);
+
+      if (!entry) {
+        return new Response(
+          JSON.stringify({ error: "No entry for today" }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      return new Response(JSON.stringify(entry), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=300"
+        }
+      });
+    }
+
+    return new Response("Not found", { status: 404 });
+  }
+};
