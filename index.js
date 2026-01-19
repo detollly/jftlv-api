@@ -1,4 +1,5 @@
 import jftlv from "./jftlv.json";
+import html from "./index.html";
 
 function getTodayKey() {
   const now = new Date();
@@ -11,7 +12,16 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
+    // Serve the HTML frontend
     if (url.pathname === "/") {
+      return new Response(html, {
+        status: 200,
+        headers: { "Content-Type": "text/html" }
+      });
+    }
+
+    // Serve today's entry as JSON
+    if (url.pathname === "/api/today") {
       const key = getTodayKey();
       const entry = jftlv.find(e => e.date === key);
 
@@ -34,6 +44,7 @@ export default {
       });
     }
 
+    // Fallback for unknown paths
     return new Response("Not found", { status: 404 });
   }
 };

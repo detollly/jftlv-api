@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Entry</title>
+</head>
+<body>
+  <div id="content"></div>
+
+  <script>
+    fetch("/")
+      .then(response => response.json())
+      .then(data => {
+        const contentDiv = document.getElementById("content");
+
+        // Turn each key/value into a line of HTML
+        contentDiv.innerHTML = Object.entries(data)
+          .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+          .join("");
+      })
+      .catch(error => {
+        console.error("Something went wrong", error);
+      });
+  </script>
+</body>
+</html>
