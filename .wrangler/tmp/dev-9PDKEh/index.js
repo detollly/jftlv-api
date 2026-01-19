@@ -3326,7 +3326,7 @@ var jftlv_default = [
 ];
 
 // index.js
-import html from "./dfc5744b182a4d8a2c50ea78e60c6a163974d2d0-index.html";
+import html from "./7eeb752ff4506d26c22b0f799eb42614ee994e6d-index.html";
 function getTodayKey() {
   const now = /* @__PURE__ */ new Date();
   const month = String(now.getMonth() + 1).padStart(2, "0");
