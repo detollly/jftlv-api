@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-jkXCTf/checked-fetch.js
+// .wrangler/tmp/bundle-y2NhOp/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -3326,9 +3326,11 @@ var jftlv_default = [
 ];
 
 // index.js
-import html from "./c58dc1aa845d0d9046e56320e00172b60f504bb0-index.html";
+import html from "./fe07e82f7d6ab26104fbe108e8652b3efb8f2c33-index.html";
 function getTodayKey() {
-  const now = /* @__PURE__ */ new Date();
+  const now = new Date(
+    (/* @__PURE__ */ new Date()).toLocaleString("en-US", { timeZone: "Europe/Riga" })
+  );
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${month}-${day}`;
@@ -3348,7 +3350,7 @@ var index_default = {
       const entry = jftlv_default.find((e) => e.date === key);
       if (!entry) {
         return new Response(
-          JSON.stringify({ error: "No entry for today" }),
+          JSON.stringify({ error: "No entry found for today" }),
           {
             status: 404,
             headers: { "Content-Type": "application/json" }
@@ -3363,7 +3365,10 @@ var index_default = {
         }
       });
     }
-    return new Response("Not found", { status: 404 });
+    return new Response("Not found", {
+      status: 404,
+      headers: { "Content-Type": "text/plain" }
+    });
   }
 };
 
@@ -3408,7 +3413,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-jkXCTf/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-y2NhOp/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3440,7 +3445,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-jkXCTf/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-y2NhOp/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
