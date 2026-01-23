@@ -3328,47 +3328,82 @@ var jftlv_default = [
 // index.js
 import html from "./fe07e82f7d6ab26104fbe108e8652b3efb8f2c33-index.html";
 function getTodayKey() {
-  const now = new Date(
-    (/* @__PURE__ */ new Date()).toLocaleString("en-US", { timeZone: "Europe/Riga" })
-  );
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Riga",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const parts = formatter.formatToParts(/* @__PURE__ */ new Date());
+  const month = parts.find((p) => p.type === "month").value;
+  const day = parts.find((p) => p.type === "day").value;
   return `${month}-${day}`;
 }
 __name(getTodayKey, "getTodayKey");
+var CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type"
+};
+function handleOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_HEADERS
+  });
+}
+__name(handleOptions, "handleOptions");
+function handleRoot() {
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8"
+    }
+  });
+}
+__name(handleRoot, "handleRoot");
+function handleToday() {
+  const key = getTodayKey();
+  const entry = jftlv_default.find((e) => e.date === key);
+  if (!entry) {
+    return new Response(
+      JSON.stringify({ error: "No entry found for today" }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          ...CORS_HEADERS
+        }
+      }
+    );
+  }
+  return new Response(JSON.stringify(entry), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=300",
+      ...CORS_HEADERS
+    }
+  });
+}
+__name(handleToday, "handleToday");
+function handleNotFound() {
+  return new Response("Not found", {
+    status: 404,
+    headers: { "Content-Type": "text/plain" }
+  });
+}
+__name(handleNotFound, "handleNotFound");
 var index_default = {
   async fetch(request) {
     const url = new URL(request.url);
-    if (url.pathname === "/") {
-      return new Response(html, {
-        status: 200,
-        headers: { "Content-Type": "text/html" }
-      });
+    if (request.method === "OPTIONS") return handleOptions();
+    switch (url.pathname) {
+      case "/":
+        return handleRoot();
+      case "/api/today":
+        return handleToday();
+      default:
+        return handleNotFound();
     }
-    if (url.pathname === "/api/today") {
-      const key = getTodayKey();
-      const entry = jftlv_default.find((e) => e.date === key);
-      if (!entry) {
-        return new Response(
-          JSON.stringify({ error: "No entry found for today" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" }
-          }
-        );
-      }
-      return new Response(JSON.stringify(entry), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=300"
-        }
-      });
-    }
-    return new Response("Not found", {
-      status: 404,
-      headers: { "Content-Type": "text/plain" }
-    });
   }
 };
 
