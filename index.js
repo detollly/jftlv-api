@@ -39,8 +39,7 @@ export default {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=300",
-          "Access-Control-Allow-Origin": "*"
+          "Cache-Control": "public, max-age=300"
         }
       });
     }

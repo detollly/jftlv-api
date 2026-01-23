@@ -1,153 +1,111 @@
 <!DOCTYPE html>
-<html lang="lv">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Narcotics Anonymous® / Anonīmie Narkomāni®</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tikai šodien</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css"
+  >
+
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #4169E1; /* Royal Blue */
-      color: white;
+    #content {
+      margin: 3rem;
+      max-width: 80vw;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
-    header {
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+
+    @media (min-width: 1920px) {
+      #content {
+        max-width: 40vw;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
     }
-    .logo {
-      font-size: 24px;
+
+    .dateLV {
+      font-size: 2rem;
+      color: #666;
+    }
+
+    .title {
+      font-size: 2rem;
       font-weight: bold;
-      border: 2px solid white;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      background-color: rgba(0,0,0,0.1);
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin: 5px 10px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      background-color: rgba(255,255,255,0.1);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      font-size: 14px;
-    }
-    .hero {
+      margin: 2rem 0;
       text-align: center;
-      padding: 30px 20px;
     }
-    .hero h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
+
+    .quote {
+      font-style: italic;
+      border-left: 4px solid #ccc;
+      padding-left: 1rem;
+      color: #444;
     }
-    .hero p {
-      font-size: 16px;
-      margin-bottom: 20px;
+
+    .reference {
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      color: #999;
     }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
+
+    .body {
+      line-height: 1.6;
+      text-align: justify;
     }
-    .btn {
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      text-decoration: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .btn-main {
-      background-color: white;
-      color: #4169E1;
-    }
-    .btn-outline {
-      background-color: transparent;
-      color: white;
-      border: 1px solid white;
-    }
-    .section {
-      padding: 20px;
-      border-top: 1px solid rgba(255,255,255,0.2);
-    }
-    .section h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-    .section p {
-      font-size: 14px;
-      color: #f0f0f0;
-    }
-    footer {
-      text-align: center;
-      padding: 15px;
-      font-size: 12px;
-      color: #f0f0f0;
-      border-top: 1px solid rgba(255,255,255,0.2);
-      background-color: rgba(0,0,0,0.1);
+
+    .affirmation {
+      background: #dadada;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 3rem;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #333;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="logo">NA</div>
-    <div>Narcotics Anonymous® / Anonīmie Narkomāni®</div>
-    <div style="margin-top: 8px; font-size: 14px;">
-      ☎ <a href="tel:+37128291992" style="color:white;">+371 28 291 992</a><br>
-      <small>Anonīms diennakts informācijas tālrunis</small>
-    </div>
-  </header>
+  <div id="content">
+    Loading...
+  </div>
 
-  <nav>
-    <a href="#">Galvenā</a>
-    <a href="#">Sapulču saraksts</a>
-    <a href="#">Dienas pārdomas</a>
-    <a href="#">Biedriem</a>
-    <a href="#">Informācija</a>
-    <a href="#">Kontakti</a>
-  </nav>
+  <script>
+    fetch("/api/today")
+      .then(response => response.json())
+      .then(data => {
+        const contentDiv = document.getElementById("content");
+        let html = "";
 
-  <section class="hero">
-    <h1>Tu neesi viens</h1>
-    <p>NA Latvija piedāvā atbalstu un cerību cilvēkiem, kuri vēlas pārtraukt lietot narkotikas.</p>
-    <div class="buttons">
-      <a href="#" class="btn btn-main">Sapulču saraksts</a>
-      <a href="#" class="btn btn-outline">Dienas pārdomas</a>
-    </div>
-  </section>
+        const fields = {
+          dateLV: "dateLV",
+          title: "title",
+          quote: "quote",
+          reference: "reference",
+          body: "body",
+          affirmation: "affirmation"
+        };
 
-  <section class="section">
-    <h2>Kas ir NA?</h2>
-    <p>Anonīmie Narkomāni ir starptautiska sadraudzība, kurā cilvēki dalās pieredzē, spēkā un cerībā, lai palīdzētu sev un citiem atveseļoties no atkarības.</p>
-  </section>
+        for (const key in fields) {
+          if (data[key]) {
+            html += `<div class="${fields[key]}">${data[key]}</div>`;
+          }
+        }
 
-  <section class="section">
-    <h2>Sapulces Latvijā</h2>
-    <p>Sapulces notiek dažādās pilsētās un tiešsaistē. Ikviens, kam ir vēlme pārtraukt lietot, ir laipni aicināts.</p>
-  </section>
-
-  <section class="section">
-    <h2>Dienas pārdomas</h2>
-    <p>Ikdienas teksts, kas palīdz atcerēties garīgos principus un atveseļošanās ceļu.</p>
-  </section>
-
-  <footer>
-    © 2026 Latvija Anonīmie Narkomāni. Visas tiesības aizsargātas. · na-latvija.lv
-  </footer>
+        contentDiv.innerHTML = html;
+      })
+      .catch(error => {
+        document.getElementById("content").textContent = "Failed to load entry.";
+        console.error("Something went wrong", error);
+      });
+  </script>
 </body>
 </html>
