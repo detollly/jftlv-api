@@ -2,9 +2,7 @@ import jftlv from "./jftlv.json"
 import html from "./index.html"
 
 function getTodayKey() {
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Europe/Riga" })
-  );
+  const now = new Date().toLocaleString("en-US", { timeZone: "Europe/Riga" });
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${month}-${day}`;
@@ -41,7 +39,8 @@ export default {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=300"
+          "Cache-Control": "public, max-age=300",
+          "Access-Control-Allow-Origin": "*"
         }
       });
     }
