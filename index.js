@@ -2,7 +2,9 @@ import jftlv from "./jftlv.json"
 import html from "./index.html"
 
 function getTodayKey() {
-  const now = new Date().toLocaleString("en-US", { timeZone: "Europe/Riga" });
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Europe/Riga" })
+  );
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${month}-${day}`;
