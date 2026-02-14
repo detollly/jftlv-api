@@ -1,13 +1,9 @@
 🌅 Tikai Šodien
-
 A beautifully simple daily‑reading experience powered by Cloudflare Workers
 A clean, distraction‑free daily reading experience delivered through a tiny serverless backend and a lightweight HTML frontend.
 Designed for speed, clarity, and a calm reading flow.
 
-
-
 🎯 Purpose
-
 Create a frictionless, instantly‑loading daily reading page that:
 - Works anywhere
 - Loads fast on any device
@@ -15,10 +11,7 @@ Create a frictionless, instantly‑loading daily reading page that:
 No frameworks. No build steps. No servers.
 Just content, clean UI, and a Worker.
 
-
-
 ✨ UX & UI Principles
-
 - Zero cognitive load — today’s reading appears instantly
 - Typography‑first — calm, readable, balanced
 - Minimal chrome — no menus, no clutter
@@ -26,23 +19,20 @@ Just content, clean UI, and a Worker.
 - Predictable structure — consistent layout
 - Fast as thought — Cloudflare edge delivery
 
-  
-
 🧩 Architecture Overview
-
 Frontend (index.html)
-   ↓ fetches
-API (/api/today)
-   ↓ reads
+      ↓ fetches
+API (/api/today) — hosted at:
+https://jftlv-api.detollly.workers.dev/api/today
+      ↓ reads
 jftlv.json (MM-DD keyed entries)
 
 
 Everything is static except the Worker logic that selects the correct entry for the current date.
-
-
+The full API implementation is open‑source:
+👉 https://github.com/detollly/jftlv-api
 
 📁 Project Structure
-
 JFTLV-WORKER/
 ├── index.html          # Minimalist UI
 ├── index.js            # Cloudflare Worker logic
@@ -57,7 +47,6 @@ JFTLV-WORKER/
 
 
 🧠 How the Worker Works
-
 1. Generate today’s key
 function getTodayKey() {
   const now = new Date();
@@ -71,12 +60,11 @@ function getTodayKey() {
 / → returns index.html
 3. Serve today’s entry
 /api/today → returns JSON for today’s MM-DD key
-If missing → returns a graceful 404 JSON error
-
-
+If missing → returns a graceful JSON 404
+Live example:
+https://jftlv-api.detollly.workers.dev/api/today
 
 🎨 UI & Styling
-
 The UI uses Milligram for a clean baseline and custom CSS for readability and balance.
 Base layout
 #content {
@@ -89,7 +77,6 @@ Base layout
 
 
 Ultra‑wide screens
-
 @media (min-width: 1920px) {
   #content {
     max-width: 40vw;
@@ -103,10 +90,7 @@ Ultra‑wide screens
 
 This creates a centered, book‑like reading column on large monitors.
 
-
-
 🖥️ Frontend Rendering Logic
-
 fetch("/api/today")
   .then(res => res.json())
   .then(data => {
@@ -124,7 +108,6 @@ fetch("/api/today")
 
 
 
-
 🧪 Local Development
 npm install -g wrangler
 wrangler dev
@@ -133,12 +116,10 @@ wrangler dev
 Open:
 http://localhost:8787
 
-
-
 🚀 Deployment
 wrangler publish
 
 
 
 📄 License
-MIT — open, flexible, and yours to build on
+MIT — open, flexible, and yours to build on.
